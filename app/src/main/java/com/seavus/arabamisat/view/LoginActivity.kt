@@ -2,6 +2,7 @@ package com.seavus.arabamisat.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -13,13 +14,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.*
 import com.seavus.arabamisat.R
-import com.seavus.arabamisat.databinding.ActivityMainBinding
+import com.seavus.arabamisat.databinding.ActivityLoginBinding
 import com.seavus.arabamisat.viewmodel.LoginViewModel
 import com.squareup.picasso.Picasso
 
 
+@Suppress("DEPRECATION")
 class LoginActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityLoginBinding
     private var mFirebaseAuth: FirebaseAuth? = null
     private lateinit var callbackManager: CallbackManager
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -27,7 +29,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
         configureFirebaseAuth()
@@ -92,9 +94,21 @@ class LoginActivity : AppCompatActivity() {
         if (firebaseUser.photoUrl != null) {
             Picasso.get().load(firebaseUser.photoUrl).into(binding.imagePlaceholder);
         }
+        Handler().postDelayed({
+            val mIntent = Intent(this@LoginActivity, MainCarActivity::class.java)
+            startActivity(mIntent)
+            finish()
+        }, 2000)
     }
 
     companion object {
         val RC_SIGN_IN = 1
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (mFirebaseAuth != null) {
+            mFirebaseAuth!!.signOut()
+        }
     }
 }

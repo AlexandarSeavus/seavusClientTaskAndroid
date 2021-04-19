@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cars_navigation_graph"
+    app:startDestination="@id/carsListFragment">
+    <fragment
+        android:id="@+id/carsListFragment"
+        android:name="com.seavus.arabamisat.view.CarsListFragment"
+        android:label="CarsListFragment"
+        tools:layout="@layout/cars_list_fragment">
+        <action
+            android:id="@+id/action_carsListFragment_to_uploadCarFragment"
+            app:destination="@id/uploadCarFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadCarFragment"
+        android:name="com.seavus.arabamisat.view.UploadCarFragment"
+        android:label="UploadCarFragment"
+        tools:layout="@layout/upload_car_fragment" />
+
+</navigation>
