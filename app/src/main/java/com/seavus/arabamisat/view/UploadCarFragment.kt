@@ -12,6 +12,7 @@ import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.google.firebase.database.FirebaseDatabase
 import com.seavus.arabamisat.databinding.UploadCarFragmentBinding
 import com.seavus.arabamisat.model.Car
@@ -76,6 +77,7 @@ class UploadCarFragment : Fragment() {
                         "Uploaded Successfully",
                         Toast.LENGTH_SHORT
                     ).show()
+                    findNavController().popBackStack()
                 }
             })
         uploadCarViewModel.getOnProgressChangedLiveData()
