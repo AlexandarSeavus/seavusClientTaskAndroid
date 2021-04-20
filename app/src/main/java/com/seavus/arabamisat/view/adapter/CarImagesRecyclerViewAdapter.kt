@@ -11,7 +11,7 @@ import kotlin.collections.ArrayList
 
 class CarImagesRecyclerViewAdapter(
     val context: Context,
-    var carList: ArrayList<Car>
+    var carList: List<Car>
 ) : RecyclerView.Adapter<CarImagesRecyclerViewAdapter.CarViewHolder>() {
 
 

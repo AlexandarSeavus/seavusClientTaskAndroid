@@ -3,6 +3,7 @@ package com.seavus.arabamisat.repository
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.annotation.NonNull
@@ -23,7 +24,7 @@ class FirebaseRepository {
     private val uploadResponseMutableLiveData: MutableLiveData<Uri> = MutableLiveData()
     private val onProgressChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
     private val carsResponseMutableLiveData: MutableLiveData<ArrayList<Car>> = MutableLiveData()
-
+    var carList: ArrayList<Car> = ArrayList()
     fun uploadToFirebase(uri: Uri, context: Context) {
         val fileRef = reference.child(
             System.currentTimeMillis().toString() + "." + getFileExtension(uri, context)
@@ -32,8 +33,7 @@ class FirebaseRepository {
             fileRef.downloadUrl.addOnSuccessListener(fun(uri: Uri) {
                 uploadResponseMutableLiveData.value = uri
             })
-        }.addOnProgressListener(object :
-            OnProgressListener<UploadTask.TaskSnapshot?> {
+        }.addOnProgressListener(object : OnProgressListener<UploadTask.TaskSnapshot?> {
             override fun onProgress(snapshot: UploadTask.TaskSnapshot) {
                 onProgressChangedLiveData.value = true
             }
@@ -53,12 +53,17 @@ class FirebaseRepository {
         onProgressChangedLiveData.value = true
         root.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(@NonNull snapshot: DataSnapshot) {
-                var carList: ArrayList<Car> = ArrayList()
+                var hasChanges = false
                 for (dataSnapshot in snapshot.children) {
                     val car: Car = dataSnapshot.getValue(Car::class.java)!!
-                    carList.add(car)
+                    if (!carList.contains(car)) {
+                        hasChanges = true
+                        carList.add(car)
+                    }
                 }
-                carsResponseMutableLiveData.value = carList
+                if (hasChanges) {
+                    carsResponseMutableLiveData.setValue(carList)
+                }
                 onProgressChangedLiveData.value = false
             }
 

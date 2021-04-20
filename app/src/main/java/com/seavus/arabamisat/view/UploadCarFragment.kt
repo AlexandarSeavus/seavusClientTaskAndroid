@@ -16,8 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.database.FirebaseDatabase
 import com.seavus.arabamisat.databinding.UploadCarFragmentBinding
 import com.seavus.arabamisat.model.Car
-import com.seavus.arabamisat.util.Base64Handler
-import com.seavus.arabamisat.viewmodel.UploadCarViewModel
+import com.seavus.arabamisat.viewmodel.CarsViewModel
 
 
 class UploadCarFragment : Fragment() {
@@ -26,7 +25,7 @@ class UploadCarFragment : Fragment() {
     private val root = FirebaseDatabase.getInstance().getReference("Image")
     private var imageUri: Uri? = null
 
-    private lateinit var uploadCarViewModel: UploadCarViewModel
+    private lateinit var carsViewModel: CarsViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,7 +38,7 @@ class UploadCarFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        uploadCarViewModel = ViewModelProvider(this).get(UploadCarViewModel::class.java)
+        carsViewModel = ViewModelProvider(this).get(CarsViewModel::class.java)
 
         getCarsListFragmentBinding.imageViewPlaceholder.setOnClickListener {
             val galleryIntent = Intent()
@@ -48,9 +47,9 @@ class UploadCarFragment : Fragment() {
             startActivityForResult(galleryIntent, 2)
         }
         getCarsListFragmentBinding.uploadButton.setOnClickListener {
-            getCarsListFragmentBinding.progressBar.setVisibility(View.VISIBLE)
             if (imageUri != null) {
-                uploadCarViewModel.uploadToFirebase(imageUri!!, requireContext())
+                getCarsListFragmentBinding.progressBar.setVisibility(View.VISIBLE)
+                carsViewModel.uploadToFirebase(imageUri!!, requireContext())
             } else {
                 Toast.makeText(
                     activity,
@@ -59,15 +58,15 @@ class UploadCarFragment : Fragment() {
                 ).show()
             }
         }
-        uploadCarViewModel.getUploadResponseMutableLiveData()
+        carsViewModel.getUploadResponseMutableLiveData()
             .observe(requireActivity(), object : Observer<Uri> {
                 override fun onChanged(uri: Uri?) {
                     val modelId = root.push().key
                     val car = Car(
+                        0,
                         modelId!!,
                         uri.toString(),
                         getCarsListFragmentBinding.imageDescriptionEditText.text.toString(),
-                        Base64Handler.encodeImage(imageUri, requireContext()),
                         true
                     )
                     root.child(modelId!!).setValue(car)
@@ -80,7 +79,7 @@ class UploadCarFragment : Fragment() {
                     findNavController().popBackStack()
                 }
             })
-        uploadCarViewModel.getOnProgressChangedLiveData()
+        carsViewModel.getOnProgressChangedLiveData()
             .observe(requireActivity(), object : Observer<Boolean> {
                 override fun onChanged(changed: Boolean) {
                     if (changed) {
