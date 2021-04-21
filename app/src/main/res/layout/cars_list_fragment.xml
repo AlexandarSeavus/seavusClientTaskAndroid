@@ -23,11 +23,11 @@
         android:layout_margin="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="25dp"
+        android:backgroundTint="@color/purple_500"
         android:src="@drawable/add_image"
         android:tint="@color/white"
         app:elevation="6dp"
         app:fabSize="normal"
-        android:backgroundTint="@color/purple_500"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:pressedTranslationZ="12dp" />
@@ -36,6 +36,21 @@
         android:id="@+id/progressBar"
         android:layout_width="70dp"
         android:layout_height="70dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/syncingTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/syncing"
+        android:textColor="@color/black"
+        android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

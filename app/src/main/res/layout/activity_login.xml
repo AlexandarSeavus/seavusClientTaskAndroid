@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@color/gray_dark"
     tools:context=".view.LoginActivity">
 
     <com.facebook.login.widget.LoginButton
@@ -38,18 +38,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/logo_firebase" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="75dp"
-        android:gravity="center"
-        android:text="LogIn"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/loginButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/userName"

@@ -25,6 +25,9 @@ interface CarDAO {
     @Query("SELECT * FROM cars_table")
     fun getAllCars(): Maybe<List<Car>>
 
-    @Query("SELECT COUNT() FROM cars_table  WHERE id = :carId")
+    @Query("SELECT COUNT() FROM cars_table  WHERE car_id = :carId")
     fun count(carId: Int): Maybe<Int>
+
+    @Query("SELECT * FROM cars_table WHERE synced = :synced")
+    fun getUnsyncedCars(synced: Boolean = true): Maybe<List<Car>>
 }

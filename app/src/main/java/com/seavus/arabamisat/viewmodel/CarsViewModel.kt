@@ -36,12 +36,23 @@ class CarsViewModel(application: Application) : AndroidViewModel(application) {
     fun addCarListToLocalDB(carList: List<Car>) {
         localDbRepository.addAllCar(carList)
     }
+
     fun deleteCarListToLocalDB() {
         localDbRepository.deleteAllCar()
     }
 
     fun getCarFromLocalDB() {
         localDbRepository.getAllCars()
+    }
+
+    fun getUnsyncedCars() {
+        localDbRepository.getUnsyncedCars()
+    }
+
+    // OBSERVERS =================================================================================
+
+    fun getUnsyncedCarsResponseMutableLiveData(): LiveData<List<Car>> {
+        return localDbRepository.getUnsyncedCarsResponseMutableLiveData()
     }
 
 
@@ -64,6 +75,21 @@ class CarsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getOnProgressChangedLiveData(): LiveData<Boolean> {
         return firbaseRepository.getOnProgressChangedLiveData()
+    }
+
+    fun getCarsListVisibilityFBChangedLiveData(): LiveData<Boolean> {
+        return firbaseRepository.getCarsListVisibilityChangedLiveData()
+    }
+
+    fun getCarsListVisibilityLDBChangedLiveData(): LiveData<Boolean> {
+        return localDbRepository.getCarsListVisibilityChangedLiveData()
+    }
+
+    fun getSyncProgressChangedLiveData(): LiveData<Boolean> {
+        return localDbRepository.getSyncProgressChangedLiveData()
+    }
+    fun getSyncProgressChangedLiveDataFB(): LiveData<Boolean> {
+        return firbaseRepository.getSyncProgressChangedLiveData()
     }
 
     fun clearObservers() {

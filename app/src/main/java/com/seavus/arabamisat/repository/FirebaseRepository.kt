@@ -3,7 +3,6 @@ package com.seavus.arabamisat.repository
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.annotation.NonNull
@@ -23,7 +22,11 @@ class FirebaseRepository {
     private val reference = FirebaseStorage.getInstance().reference
     private val uploadResponseMutableLiveData: MutableLiveData<Uri> = MutableLiveData()
     private val onProgressChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
+    private val carsListVisibilityChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
     private val carsResponseMutableLiveData: MutableLiveData<ArrayList<Car>> = MutableLiveData()
+    private val syncProgressChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
+
+
     var carList: ArrayList<Car> = ArrayList()
     fun uploadToFirebase(uri: Uri, context: Context) {
         val fileRef = reference.child(
@@ -32,6 +35,7 @@ class FirebaseRepository {
         fileRef.putFile(uri).addOnSuccessListener {
             fileRef.downloadUrl.addOnSuccessListener(fun(uri: Uri) {
                 uploadResponseMutableLiveData.value = uri
+                syncProgressChangedLiveData.value = false
             })
         }.addOnProgressListener(object : OnProgressListener<UploadTask.TaskSnapshot?> {
             override fun onProgress(snapshot: UploadTask.TaskSnapshot) {
@@ -39,6 +43,7 @@ class FirebaseRepository {
             }
         }).addOnFailureListener {
             onProgressChangedLiveData.value = false
+            syncProgressChangedLiveData.value = false
             Toast.makeText(context, "Uploading Failed !!", Toast.LENGTH_SHORT).show()
         }
     }
@@ -53,16 +58,17 @@ class FirebaseRepository {
         onProgressChangedLiveData.value = true
         root.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(@NonNull snapshot: DataSnapshot) {
-                var hasChanges = false
                 for (dataSnapshot in snapshot.children) {
                     val car: Car = dataSnapshot.getValue(Car::class.java)!!
                     if (!carList.contains(car)) {
-                        hasChanges = true
                         carList.add(car)
                     }
                 }
-                if (hasChanges) {
-                    carsResponseMutableLiveData.setValue(carList)
+                carsResponseMutableLiveData.value = carList
+                if (!carList.isEmpty()) {
+                    carsListVisibilityChangedLiveData.value = true
+                } else {
+                    carsListVisibilityChangedLiveData.value = false
                 }
                 onProgressChangedLiveData.value = false
             }
@@ -84,5 +90,13 @@ class FirebaseRepository {
 
     fun getOnProgressChangedLiveData(): LiveData<Boolean> {
         return onProgressChangedLiveData
+    }
+
+    fun getSyncProgressChangedLiveData(): LiveData<Boolean> {
+        return syncProgressChangedLiveData
+    }
+
+    fun getCarsListVisibilityChangedLiveData(): LiveData<Boolean> {
+        return carsListVisibilityChangedLiveData
     }
 }

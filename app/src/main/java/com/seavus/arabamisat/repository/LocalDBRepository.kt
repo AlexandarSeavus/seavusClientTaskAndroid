@@ -1,7 +1,6 @@
 package com.seavus.arabamisat.repository
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.seavus.arabamisat.db.CarsDatabase
@@ -20,6 +19,10 @@ class LocalDBRepository(application: Application) {
     private val carListResponseMutableLiveData: MutableLiveData<List<Car>> = MutableLiveData()
     private val insertCartResponseMutableLiveData: MutableLiveData<Boolean> = MutableLiveData()
     private val onProgressChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
+    private val carsListVisibilityChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
+    private val unsyncedCarsResponseMutableLiveData: MutableLiveData<List<Car>> = MutableLiveData()
+    private val syncProgressChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
+
 
     init {
         carsDatabase = CarsDatabase.getInstance(application)
@@ -77,6 +80,7 @@ class LocalDBRepository(application: Application) {
                 .subscribeWith(object : DisposableMaybeObserver<List<Car>>() {
                     override fun onSuccess(carList: List<Car>) {
                         carListResponseMutableLiveData.value = carList
+                        carsListVisibilityChangedLiveData.value = true
                     }
 
                     override fun onError(e: Throwable) {
@@ -90,8 +94,39 @@ class LocalDBRepository(application: Application) {
         )
     }
 
+    fun getUnsyncedCars() {
+        syncProgressChangedLiveData.postValue(true)
+        var maybe: Maybe<List<Car>> = carsDatabase.carsDAO().getUnsyncedCars(false)
+        compositeDisposable.add(
+            maybe.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableMaybeObserver<List<Car>>() {
+                    override fun onSuccess(cl: List<Car>) {
+                        if (!cl.isEmpty()) {
+                            carsListVisibilityChangedLiveData.value = true
+                        } else {
+                            carsListVisibilityChangedLiveData.value = false
+                        }
+                        unsyncedCarsResponseMutableLiveData.value = cl
+                        syncProgressChangedLiveData.value = false
+                    }
+
+                    override fun onComplete() {
+                    }
+
+                    override fun onError(e: Throwable) {
+                        onProgressChangedLiveData.value = false
+                    }
+
+                })
+        )
+    }
+
     fun getLocalDBCarsResponseMutableLiveData(): LiveData<List<Car>> {
         return carListResponseMutableLiveData
+    }
+
+    fun getUnsyncedCarsResponseMutableLiveData(): LiveData<List<Car>> {
+        return unsyncedCarsResponseMutableLiveData
     }
 
 
@@ -99,8 +134,16 @@ class LocalDBRepository(application: Application) {
         return onProgressChangedLiveData
     }
 
+    fun getSyncProgressChangedLiveData(): LiveData<Boolean> {
+        return syncProgressChangedLiveData
+    }
+
     fun getInsertCartLocalDBResponseMutableLiveData(): LiveData<Boolean> {
         return insertCartResponseMutableLiveData
+    }
+
+    fun getCarsListVisibilityChangedLiveData(): LiveData<Boolean> {
+        return carsListVisibilityChangedLiveData
     }
 
     fun clearDisposable() {

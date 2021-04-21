@@ -16,14 +16,17 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.database.FirebaseDatabase
 import com.seavus.arabamisat.databinding.UploadCarFragmentBinding
 import com.seavus.arabamisat.model.Car
+import com.seavus.arabamisat.util.NetworkChecker
 import com.seavus.arabamisat.viewmodel.CarsViewModel
+import java.util.*
 
 
 class UploadCarFragment : Fragment() {
     private var uploadCarFragmentBinding: UploadCarFragmentBinding? = null
-    private val getCarsListFragmentBinding get() = uploadCarFragmentBinding!!
+    private val getCarUploadFragmentBinding get() = uploadCarFragmentBinding!!
     private val root = FirebaseDatabase.getInstance().getReference("Image")
     private var imageUri: Uri? = null
+    private var carUUID = ""
 
     private lateinit var carsViewModel: CarsViewModel
 
@@ -33,23 +36,36 @@ class UploadCarFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         uploadCarFragmentBinding = UploadCarFragmentBinding.inflate(inflater, container, false)
-        return getCarsListFragmentBinding?.root
+        return getCarUploadFragmentBinding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         carsViewModel = ViewModelProvider(this).get(CarsViewModel::class.java)
 
-        getCarsListFragmentBinding.imageViewPlaceholder.setOnClickListener {
+        getCarUploadFragmentBinding.imageViewPlaceholder.setOnClickListener {
             val galleryIntent = Intent()
             galleryIntent.action = Intent.ACTION_GET_CONTENT
             galleryIntent.type = "image/*"
             startActivityForResult(galleryIntent, 2)
         }
-        getCarsListFragmentBinding.uploadButton.setOnClickListener {
+        getCarUploadFragmentBinding.uploadButton.setOnClickListener {
             if (imageUri != null) {
-                getCarsListFragmentBinding.progressBar.setVisibility(View.VISIBLE)
-                carsViewModel.uploadToFirebase(imageUri!!, requireContext())
+                getCarUploadFragmentBinding.progressBar.setVisibility(View.VISIBLE)
+                carUUID = UUID.randomUUID().toString();
+                val car = Car(
+                    carUUID,
+                    imageUri.toString(),
+                    getCarUploadFragmentBinding.imageDescriptionEditText.text.toString(),
+                    false
+                )
+                carsViewModel.addCarToLocalDB(car)
+                if (NetworkChecker.isNetworkAvailable(requireActivity())) {
+                    carsViewModel.uploadToFirebase(imageUri!!, requireContext())
+                } else {
+                    getCarUploadFragmentBinding.progressBar.setVisibility(View.INVISIBLE)
+                    findNavController().popBackStack()
+                }
             } else {
                 Toast.makeText(
                     activity,
@@ -63,14 +79,13 @@ class UploadCarFragment : Fragment() {
                 override fun onChanged(uri: Uri?) {
                     val modelId = root.push().key
                     val car = Car(
-                        0,
-                        modelId!!,
+                        carUUID,
                         uri.toString(),
-                        getCarsListFragmentBinding.imageDescriptionEditText.text.toString(),
+                        getCarUploadFragmentBinding.imageDescriptionEditText.text.toString(),
                         true
                     )
                     root.child(modelId!!).setValue(car)
-                    getCarsListFragmentBinding.progressBar.setVisibility(View.INVISIBLE)
+                    getCarUploadFragmentBinding.progressBar.setVisibility(View.INVISIBLE)
                     Toast.makeText(
                         activity,
                         "Uploaded Successfully",
@@ -83,13 +98,20 @@ class UploadCarFragment : Fragment() {
             .observe(requireActivity(), object : Observer<Boolean> {
                 override fun onChanged(changed: Boolean) {
                     if (changed) {
-                        getCarsListFragmentBinding.progressBar.setVisibility(View.VISIBLE)
+                        getCarUploadFragmentBinding.progressBar.setVisibility(View.VISIBLE)
+                        getCarUploadFragmentBinding.uploadButton.isEnabled = false
                     } else {
-                        getCarsListFragmentBinding.progressBar.setVisibility(View.GONE)
+                        getCarUploadFragmentBinding.progressBar.setVisibility(View.GONE)
+                        getCarUploadFragmentBinding.uploadButton.isEnabled = true
                     }
                 }
             })
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        carsViewModel.clearObservers()
     }
 
     override fun onActivityResult(
@@ -100,7 +122,7 @@ class UploadCarFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 2 && resultCode == RESULT_OK && data != null) {
             imageUri = data.data
-            getCarsListFragmentBinding.imageViewPlaceholder.setImageURI(imageUri)
+            getCarUploadFragmentBinding.imageViewPlaceholder.setImageURI(imageUri)
         }
     }
 }
