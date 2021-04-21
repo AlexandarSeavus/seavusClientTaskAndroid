@@ -1,0 +1,16 @@
+ ArabamiSat Summary
+
+ The application uses the Firebase APi for logging in via Facebook and Google.
+ In addition to the api for (Storage, DB) for uploading images and descriptions, to Firebase Server.
+
+ In the application for store in offline mode there is a Room library as a wrapper for communication with Sqlite.
+ Sync feature has also been implemented. It is triggered when the device returns to the ONLINE MODE.
+ The mechanism works by having a field "synced" in the database that is used to check whether the data was sent to the Firebase server or not.
+
+ The MVVM structure with LiveData has been implemented.
+ Repositories are separated as logic for observing and processing data that is fabricated using RX, as required in the task description
+
+ A "View Binding" as well as a "Navigation Graph", as an example of best practice, recommended by Google
+
+ There is a GitHub repository, everything is committed and merged into a master branch.
+ This serves as an example only, in the production of course not merging into the master, but there is some dev branch
