@@ -3,6 +3,7 @@ package com.seavus.arabamisat.repository
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.seavus.arabamisat.db.CarsDatabase
 import com.seavus.arabamisat.model.Car
 import io.reactivex.Completable
@@ -38,6 +39,8 @@ class LocalDBRepository(application: Application) {
                     }
 
                     override fun onError(e: Throwable) {
+                        FirebaseCrashlytics.getInstance().setCustomKey("db", "addCar")
+                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 })
         )
@@ -53,6 +56,8 @@ class LocalDBRepository(application: Application) {
                     }
 
                     override fun onError(e: Throwable) {
+                        FirebaseCrashlytics.getInstance().setCustomKey("db", "addAllCar")
+                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 })
         )
@@ -64,9 +69,12 @@ class LocalDBRepository(application: Application) {
             completable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableCompletableObserver() {
                     override fun onComplete() {
+                        // No need for now
                     }
 
                     override fun onError(e: Throwable) {
+                        FirebaseCrashlytics.getInstance().setCustomKey("db", "deleteAllCar")
+                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 })
         )
@@ -84,6 +92,8 @@ class LocalDBRepository(application: Application) {
                     }
 
                     override fun onError(e: Throwable) {
+                        FirebaseCrashlytics.getInstance().setCustomKey("db", "getAllCars")
+                        FirebaseCrashlytics.getInstance().recordException(e)
                         onProgressChangedLiveData.value = false
                     }
 
@@ -114,6 +124,7 @@ class LocalDBRepository(application: Application) {
                     }
 
                     override fun onError(e: Throwable) {
+                        FirebaseCrashlytics.getInstance().recordException(e)
                         onProgressChangedLiveData.value = false
                     }
 

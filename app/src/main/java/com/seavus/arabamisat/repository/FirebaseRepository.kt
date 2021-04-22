@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.annotation.NonNull
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -42,6 +43,8 @@ class FirebaseRepository {
                 onProgressChangedLiveData.value = true
             }
         }).addOnFailureListener {
+            FirebaseCrashlytics.getInstance().setCustomKey("firebase", "uploadToFirebase")
+            FirebaseCrashlytics.getInstance().recordException(it)
             onProgressChangedLiveData.value = false
             syncProgressChangedLiveData.value = false
             Toast.makeText(context, "Uploading Failed !!", Toast.LENGTH_SHORT).show()

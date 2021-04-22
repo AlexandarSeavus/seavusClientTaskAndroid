@@ -15,6 +15,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.*
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.seavus.arabamisat.view.LoginActivity
 
 class LoginRepository {
@@ -36,6 +37,8 @@ class LoginRepository {
             }
 
             override fun onError(error: FacebookException?) {
+                FirebaseCrashlytics.getInstance().setCustomKey("login", "startFacebookLogin")
+                error?.let { FirebaseCrashlytics.getInstance().recordException(it) }
             }
         })
     }
@@ -54,6 +57,7 @@ class LoginRepository {
                         var firebaseUser: FirebaseUser = mFirebaseAuth!!.currentUser
                         authResponseMutableLiveData.value = firebaseUser
                     } else {
+                        FirebaseCrashlytics.getInstance().setCustomKey("login", "handleFacebookToken")
                         task.exception?.message?.let {
                             Log.e(
                                 LoginRepository::class.java.getName(),
@@ -76,7 +80,9 @@ class LoginRepository {
             val account = task.getResult(ApiException::class.java)!!
             firebaseAuthWithGoogle(account.idToken!!, mFirebaseAuth, activity)
         } catch (e: ApiException) {
+            FirebaseCrashlytics.getInstance().setCustomKey("login", "startGoogleLogin")
             // Google Sign In failed, update UI appropriately
+            FirebaseCrashlytics.getInstance().recordException(e)
         }
     }
 

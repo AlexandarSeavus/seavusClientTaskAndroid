@@ -13,6 +13,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.*
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.seavus.arabamisat.R
 import com.seavus.arabamisat.databinding.ActivityLoginBinding
 import com.seavus.arabamisat.viewmodel.LoginViewModel
@@ -95,6 +96,7 @@ class LoginActivity : AppCompatActivity() {
             Picasso.get().load(firebaseUser.photoUrl).into(binding.imagePlaceholder);
         }
         Handler().postDelayed({
+            FirebaseCrashlytics.getInstance().setUserId(firebaseUser.uid)
             val mIntent = Intent(this@LoginActivity, MainCarActivity::class.java)
             startActivity(mIntent)
             finish()
