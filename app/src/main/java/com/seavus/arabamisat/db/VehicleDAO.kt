@@ -1,33 +1,35 @@
 package com.seavus.arabamisat.db
 
 import androidx.room.*
-import com.seavus.arabamisat.model.Car
+import com.seavus.arabamisat.model.Vehicle
 import io.reactivex.Completable
-import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
 
 
 @Dao
-interface CarDAO {
+interface VehicleDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(car: Car?): Completable
+    fun insert(vehicle: Vehicle?): Completable
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllCars(carList: List<Car>): Completable
+    fun insertAllCars(vehicleList: List<Vehicle>): Completable
 
     @Update
-    fun update(car: Car?): Single<Int>
+    fun update(vehicle: Vehicle?): Single<Int>
 
     @Query("DELETE FROM cars_table")
     fun delete(): Completable
 
     @Query("SELECT * FROM cars_table")
-    fun getAllCars(): Maybe<List<Car>>
+    fun getAllCars(): Maybe<List<Vehicle>>
 
     @Query("SELECT COUNT() FROM cars_table  WHERE car_id = :carId")
-    fun count(carId: Int): Maybe<Int>
+    fun userCount(carId: String): Maybe<Int>
+
+    @Query("SELECT COUNT() FROM cars_table")
+    fun userCount(): Maybe<Int>
 
     @Query("SELECT * FROM cars_table WHERE synced = :synced")
-    fun getUnsyncedCars(synced: Boolean = true): Maybe<List<Car>>
+    fun getUnsyncedCars(synced: Boolean = true): Maybe<List<Vehicle>>
 }

@@ -5,17 +5,17 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import com.seavus.arabamisat.model.Car
+import com.seavus.arabamisat.model.Vehicle
 import com.seavus.arabamisat.repository.FirebaseRepository
 import com.seavus.arabamisat.repository.LocalDBRepository
 
 class CarsViewModel(application: Application) : AndroidViewModel(application) {
     private var firbaseRepository: FirebaseRepository
-    private var localDbRepository: LocalDBRepository
+    private var localDBRepository: LocalDBRepository
 
     init {
-        firbaseRepository = FirebaseRepository()
-        localDbRepository = LocalDBRepository(application)
+        firbaseRepository = FirebaseRepository(application)
+        localDBRepository = LocalDBRepository(application)
     }
     // FIREBASE ==================================================================================
 
@@ -29,39 +29,39 @@ class CarsViewModel(application: Application) : AndroidViewModel(application) {
 
     // LOCAL DB ==================================================================================
 
-    fun addCarToLocalDB(car: Car) {
-        localDbRepository.addCar(car)
+    fun addCarToLocalDB(vehicle: Vehicle) {
+        localDBRepository.addCar(vehicle)
     }
 
-    fun addCarListToLocalDB(carList: List<Car>) {
-        localDbRepository.addAllCar(carList)
+    fun addCarListToLocalDB(vehicleList: List<Vehicle>) {
+        localDBRepository.addAllCar(vehicleList)
     }
 
     fun deleteCarListToLocalDB() {
-        localDbRepository.deleteAllCar()
+        localDBRepository.deleteAllCar()
     }
 
     fun getCarFromLocalDB() {
-        localDbRepository.getAllCars()
+        localDBRepository.getAllCars()
     }
 
     fun getUnsyncedCars() {
-        localDbRepository.getUnsyncedCars()
+        localDBRepository.getUnsyncedCars()
     }
 
     // OBSERVERS =================================================================================
 
-    fun getUnsyncedCarsResponseMutableLiveData(): LiveData<List<Car>> {
-        return localDbRepository.getUnsyncedCarsResponseMutableLiveData()
+    fun getUnsyncedCarsResponseMutableLiveData(): LiveData<List<Vehicle>> {
+        return localDBRepository.getUnsyncedCarsResponseMutableLiveData()
     }
 
 
-    fun getLocalDBCarsResponseMutableLiveData(): LiveData<List<Car>> {
-        return localDbRepository.getLocalDBCarsResponseMutableLiveData()
+    fun getLocalDBCarsResponseMutableLiveData(): LiveData<List<Vehicle>> {
+        return localDBRepository.getLocalDBCarsResponseMutableLiveData()
     }
 
     fun getInsertCartLocalDBResponseMutableLiveData(): LiveData<Boolean> {
-        return localDbRepository.getInsertCartLocalDBResponseMutableLiveData()
+        return localDBRepository.getInsertCartLocalDBResponseMutableLiveData()
     }
 
 
@@ -69,7 +69,7 @@ class CarsViewModel(application: Application) : AndroidViewModel(application) {
         return firbaseRepository.getUploadResponseMutableLiveData()
     }
 
-    fun getCarsResponseMutableLiveData(): LiveData<ArrayList<Car>> {
+    fun getCarsResponseMutableLiveData(): LiveData<ArrayList<Vehicle>> {
         return firbaseRepository.getCarsResponseMutableLiveData()
     }
 
@@ -77,22 +77,7 @@ class CarsViewModel(application: Application) : AndroidViewModel(application) {
         return firbaseRepository.getOnProgressChangedLiveData()
     }
 
-    fun getCarsListVisibilityFBChangedLiveData(): LiveData<Boolean> {
-        return firbaseRepository.getCarsListVisibilityChangedLiveData()
-    }
-
-    fun getCarsListVisibilityLDBChangedLiveData(): LiveData<Boolean> {
-        return localDbRepository.getCarsListVisibilityChangedLiveData()
-    }
-
-    fun getSyncProgressChangedLiveData(): LiveData<Boolean> {
-        return localDbRepository.getSyncProgressChangedLiveData()
-    }
-    fun getSyncProgressChangedLiveDataFB(): LiveData<Boolean> {
-        return firbaseRepository.getSyncProgressChangedLiveData()
-    }
-
     fun clearObservers() {
-        localDbRepository.clearDisposable()
+        localDBRepository.clearDisposable()
     }
 }

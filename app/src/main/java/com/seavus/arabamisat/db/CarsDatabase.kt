@@ -5,11 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.seavus.arabamisat.model.Car
+import com.seavus.arabamisat.model.Vehicle
 
-@Database(entities = [Car::class], version = 1,  exportSchema = false)
+@Database(entities = [Vehicle::class], version = 1,  exportSchema = false)
 abstract class CarsDatabase : RoomDatabase() {
-    abstract fun carsDAO(): CarDAO
+    abstract fun carsDAO(): VehicleDAO
 
     companion object {
         @Volatile

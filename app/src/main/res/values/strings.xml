@@ -5,4 +5,9 @@
     <string name="web_id_client">686854618435-ttp0e4p6ft6kd99vvrq1hltlspaog422.apps.googleusercontent.com</string>
     <string name="syncing">Syncing...</string>
     <string name="press_to_add_a_car">Press + to add a car</string>
+    <string name="image">Image</string>
+    <string name="upload_failed">Uploading Failed !!</string>
+    <string name="firebase_key">firebase</string>
+    <string name="db_key">db</string>
+    <string name="upload_successfully">Uploaded Successfully</string>
 </resources>

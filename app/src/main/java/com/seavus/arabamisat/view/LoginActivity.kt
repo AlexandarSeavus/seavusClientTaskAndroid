@@ -3,10 +3,11 @@ package com.seavus.arabamisat.view
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 
 import com.facebook.CallbackManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -16,23 +17,22 @@ import com.google.firebase.auth.*
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.seavus.arabamisat.R
 import com.seavus.arabamisat.databinding.ActivityLoginBinding
+import com.seavus.arabamisat.util.Constants.Companion.RC_SIGN_IN
 import com.seavus.arabamisat.viewmodel.LoginViewModel
 import com.squareup.picasso.Picasso
 
 
-@Suppress("DEPRECATION")
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private var mFirebaseAuth: FirebaseAuth? = null
     private lateinit var callbackManager: CallbackManager
     private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var loginViewModel: LoginViewModel
+    val loginViewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
         configureFirebaseAuth()
         configureFacebookLogin()
         configureGoogleLogin()
@@ -59,21 +59,16 @@ class LoginActivity : AppCompatActivity() {
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
-        binding.googleSignInButton.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(view: View?) {
-                var intent = googleSignInClient.signInIntent
-                startActivityForResult(intent, RC_SIGN_IN)
-            }
-        })
+        binding.googleSignInButton.setOnClickListener {
+            var intent = googleSignInClient.signInIntent
+            startActivityForResult(intent, RC_SIGN_IN)
+        }
     }
 
     private fun setUpLoginObserver() {
         loginViewModel.getAuthResponseMutableLiveData()
-            ?.observe(this, object : Observer<FirebaseUser> {
-                override fun onChanged(firebaseUser: FirebaseUser?) {
-                    firebaseUser?.let { showUI(it) }
-                }
-            })
+            ?.observe(this,
+                Observer<FirebaseUser> { firebaseUser -> firebaseUser?.let { showUI(it) } })
 
     }
 
@@ -86,25 +81,18 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun showUI(firebaseUser: FirebaseUser) {
-        if (firebaseUser == null) return
-        if (firebaseUser != null) {
-            binding.userName.text = "WELCOME ${firebaseUser.displayName}"
-            binding.loginButton.visibility = View.GONE
-            binding.googleSignInButton.visibility = View.GONE
-        }
+        binding.userName.text = "WELCOME ${firebaseUser.displayName}"
+        binding.loginButton.visibility = View.GONE
+        binding.googleSignInButton.visibility = View.GONE
         if (firebaseUser.photoUrl != null) {
             Picasso.get().load(firebaseUser.photoUrl).into(binding.imagePlaceholder);
         }
-        Handler().postDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
             FirebaseCrashlytics.getInstance().setUserId(firebaseUser.uid)
             val mIntent = Intent(this@LoginActivity, MainCarActivity::class.java)
             startActivity(mIntent)
             finish()
         }, 2000)
-    }
-
-    companion object {
-        val RC_SIGN_IN = 1
     }
 
     override fun onDestroy() {

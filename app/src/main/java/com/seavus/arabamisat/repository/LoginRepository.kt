@@ -80,8 +80,8 @@ class LoginRepository {
             val account = task.getResult(ApiException::class.java)!!
             firebaseAuthWithGoogle(account.idToken!!, mFirebaseAuth, activity)
         } catch (e: ApiException) {
-            FirebaseCrashlytics.getInstance().setCustomKey("login", "startGoogleLogin")
             // Google Sign In failed, update UI appropriately
+            FirebaseCrashlytics.getInstance().setCustomKey("login", "startGoogleLogin")
             FirebaseCrashlytics.getInstance().recordException(e)
         }
     }

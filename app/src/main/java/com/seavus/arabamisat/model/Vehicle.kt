@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "cars_table")
-data class Car(
+data class Vehicle(
     @PrimaryKey
     @ColumnInfo(name = "car_id") var carID: String = "",
     @ColumnInfo(name = "image_path") var imagePath: String = "",

@@ -10,100 +10,87 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.seavus.arabamisat.R
 import com.seavus.arabamisat.databinding.UploadCarFragmentBinding
-import com.seavus.arabamisat.model.Car
+import com.seavus.arabamisat.model.Vehicle
 import com.seavus.arabamisat.util.NetworkChecker
 import com.seavus.arabamisat.viewmodel.CarsViewModel
 import java.util.*
 
 
 class UploadCarFragment : Fragment() {
-    private var uploadCarFragmentBinding: UploadCarFragmentBinding? = null
-    private val getCarUploadFragmentBinding get() = uploadCarFragmentBinding!!
-    private val root = FirebaseDatabase.getInstance().getReference("Image")
-    private var imageUri: Uri? = null
+    private lateinit var carsListFragmentBinding: UploadCarFragmentBinding
+    private lateinit var root: DatabaseReference
+    private lateinit var imageUri: Uri
     private var carUUID = ""
-
-    private lateinit var carsViewModel: CarsViewModel
+    val carsViewModel by viewModels<CarsViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        uploadCarFragmentBinding = UploadCarFragmentBinding.inflate(inflater, container, false)
-        return getCarUploadFragmentBinding?.root
+        carsListFragmentBinding = UploadCarFragmentBinding.inflate(inflater, container, false)
+        return carsListFragmentBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        carsViewModel = ViewModelProvider(this).get(CarsViewModel::class.java)
-
-        getCarUploadFragmentBinding.imageViewPlaceholder.setOnClickListener {
+        root = FirebaseDatabase.getInstance().getReference(getString(R.string.image))
+        carsListFragmentBinding.imageViewPlaceholder.setOnClickListener {
             val galleryIntent = Intent()
             galleryIntent.action = Intent.ACTION_GET_CONTENT
             galleryIntent.type = "image/*"
             startActivityForResult(galleryIntent, 2)
         }
-        getCarUploadFragmentBinding.uploadButton.setOnClickListener {
-            if (imageUri != null) {
-                getCarUploadFragmentBinding.progressBar.setVisibility(View.VISIBLE)
-                carUUID = UUID.randomUUID().toString();
-                val car = Car(
-                    carUUID,
-                    imageUri.toString(),
-                    getCarUploadFragmentBinding.imageDescriptionEditText.text.toString(),
-                    false
-                )
-                carsViewModel.addCarToLocalDB(car)
-                if (NetworkChecker.isNetworkAvailable(requireActivity())) {
-                    carsViewModel.uploadToFirebase(imageUri!!, requireContext())
-                } else {
-                    getCarUploadFragmentBinding.progressBar.setVisibility(View.INVISIBLE)
-                    findNavController().popBackStack()
-                }
+        carsListFragmentBinding.uploadButton.setOnClickListener {
+            carsListFragmentBinding.progressBar.setVisibility(View.VISIBLE)
+            carUUID = UUID.randomUUID().toString();
+            val car = Vehicle(
+                carUUID,
+                imageUri.toString(),
+                carsListFragmentBinding.imageDescriptionEditText.text.toString(),
+                false
+            )
+            carsViewModel.addCarToLocalDB(car)
+            if (NetworkChecker.isNetworkAvailable(requireActivity())) {
+                carsViewModel.uploadToFirebase(imageUri!!, requireContext())
             } else {
-                Toast.makeText(
-                    activity,
-                    "Plese select image!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                carsListFragmentBinding.progressBar.setVisibility(View.INVISIBLE)
+                findNavController().popBackStack()
             }
         }
         carsViewModel.getUploadResponseMutableLiveData()
-            .observe(requireActivity(), object : Observer<Uri> {
-                override fun onChanged(uri: Uri?) {
-                    val modelId = root.push().key
-                    val car = Car(
-                        carUUID,
-                        uri.toString(),
-                        getCarUploadFragmentBinding.imageDescriptionEditText.text.toString(),
-                        true
-                    )
-                    root.child(modelId!!).setValue(car)
-                    getCarUploadFragmentBinding.progressBar.setVisibility(View.INVISIBLE)
-                    Toast.makeText(
-                        activity,
-                        "Uploaded Successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    findNavController().popBackStack()
-                }
+            .observe(requireActivity(), Observer<Uri> { uri ->
+                val modelId = root.push().key
+                val car = Vehicle(
+                    carUUID,
+                    uri.toString(),
+                    carsListFragmentBinding.imageDescriptionEditText.text.toString(),
+                    true
+                )
+                root.child(modelId!!).setValue(car)
+                carsListFragmentBinding.progressBar.setVisibility(View.INVISIBLE)
+                Toast.makeText(
+                    activity,
+                    requireContext().getString(R.string.upload_successfully),
+                    Toast.LENGTH_SHORT
+                ).show()
+                findNavController().popBackStack()
             })
         carsViewModel.getOnProgressChangedLiveData()
-            .observe(requireActivity(), object : Observer<Boolean> {
-                override fun onChanged(changed: Boolean) {
-                    if (changed) {
-                        getCarUploadFragmentBinding.progressBar.setVisibility(View.VISIBLE)
-                        getCarUploadFragmentBinding.uploadButton.isEnabled = false
-                    } else {
-                        getCarUploadFragmentBinding.progressBar.setVisibility(View.GONE)
-                        getCarUploadFragmentBinding.uploadButton.isEnabled = true
-                    }
+            .observe(requireActivity(), Observer<Boolean> { changed ->
+                if (changed) {
+                    carsListFragmentBinding.progressBar.setVisibility(View.VISIBLE)
+                    carsListFragmentBinding.uploadButton.isEnabled = false
+                } else {
+                    carsListFragmentBinding.progressBar.setVisibility(View.GONE)
+                    carsListFragmentBinding.uploadButton.isEnabled = true
                 }
             })
 
@@ -121,8 +108,8 @@ class UploadCarFragment : Fragment() {
     ) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 2 && resultCode == RESULT_OK && data != null) {
-            imageUri = data.data
-            getCarUploadFragmentBinding.imageViewPlaceholder.setImageURI(imageUri)
+            imageUri = data.data!!
+            carsListFragmentBinding.imageViewPlaceholder.setImageURI(imageUri)
         }
     }
 }
