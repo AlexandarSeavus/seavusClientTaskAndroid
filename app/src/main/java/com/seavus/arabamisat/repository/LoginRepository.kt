@@ -50,17 +50,18 @@ class LoginRepository {
     ) {
         var authCredential: AuthCredential =
             FacebookAuthProvider.getCredential(accessToken.token)
-        mFirebaseAuth?.signInWithCredential(authCredential)
-            ?.addOnCompleteListener(activity, object : OnCompleteListener<AuthResult> {
+        mFirebaseAuth.signInWithCredential(authCredential)
+            .addOnCompleteListener(activity, object : OnCompleteListener<AuthResult> {
                 override fun onComplete(task: Task<AuthResult>) {
                     if (task.isSuccessful) {
-                        var firebaseUser: FirebaseUser = mFirebaseAuth!!.currentUser
+                        var firebaseUser: FirebaseUser = mFirebaseAuth.currentUser
                         authResponseMutableLiveData.value = firebaseUser
                     } else {
-                        FirebaseCrashlytics.getInstance().setCustomKey("login", "handleFacebookToken")
+                        FirebaseCrashlytics.getInstance()
+                            .setCustomKey("login", "handleFacebookToken")
                         task.exception?.message?.let {
                             Log.e(
-                                LoginRepository::class.java.getName(),
+                                LoginRepository::class.java.name,
                                 it
                             )
                         }
@@ -98,7 +99,7 @@ class LoginRepository {
                 { task ->
                     if (task.isSuccessful) {
                         // Sign in success, update UI with the signed-in user's information
-                        val firebaseUser: FirebaseUser = mFirebaseAuth!!.getCurrentUser()
+                        val firebaseUser: FirebaseUser = mFirebaseAuth.currentUser
                         authResponseMutableLiveData.value = firebaseUser
                     }
                 })

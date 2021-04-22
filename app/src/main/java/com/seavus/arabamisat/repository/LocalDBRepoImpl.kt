@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.seavus.arabamisat.R
-import com.seavus.arabamisat.db.CarsDatabase
+import com.seavus.arabamisat.db.VehicleDatabase
 import com.seavus.arabamisat.model.Vehicle
 import io.reactivex.Completable
 import io.reactivex.Maybe
@@ -15,22 +15,18 @@ import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableMaybeObserver
 import io.reactivex.schedulers.Schedulers
 
-class LocalDBRepository(var application: Application) {
+class LocalDBRepoImpl(var application: Application) : IDBRepo {
     private val compositeDisposable = CompositeDisposable()
-    private var carsDatabase: CarsDatabase
-    private val vehicleListResponseMutableLiveData: MutableLiveData<List<Vehicle>> =
-        MutableLiveData()
+    private var vehicleDatabase: VehicleDatabase
+    private val vehicleListResponseMutableLiveData: MutableLiveData<List<Vehicle>> = MutableLiveData()
     private val insertCartResponseMutableLiveData: MutableLiveData<Boolean> = MutableLiveData()
     private val onProgressChangedLiveData: MutableLiveData<Boolean> = MutableLiveData()
-    private val unsyncedCarsResponseMutableLiveData: MutableLiveData<List<Vehicle>> =
-        MutableLiveData()
+    private val unsyncedCarsResponseMutableLiveData: MutableLiveData<List<Vehicle>> = MutableLiveData()
 
-    init {
-        carsDatabase = CarsDatabase.getInstance(application)
-    }
+    init { vehicleDatabase = VehicleDatabase.getInstance(application) }
 
-    fun addCar(vehicle: Vehicle) {
-        var completable: Completable = carsDatabase.carsDAO().insert(vehicle)
+    override fun addCar(vehicle: Vehicle) {
+        var completable: Completable = vehicleDatabase.carsDAO().insert(vehicle)
         compositeDisposable.add(
             completable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableCompletableObserver() {
@@ -47,8 +43,8 @@ class LocalDBRepository(var application: Application) {
         )
     }
 
-    fun addAllCar(vehicleList: List<Vehicle>) {
-        var completable: Completable = carsDatabase.carsDAO().insertAllCars(vehicleList)
+    override fun addAllCars(vehicleList: List<Vehicle>) {
+        var completable: Completable = vehicleDatabase.carsDAO().insertAllCars(vehicleList)
         compositeDisposable.add(
             completable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableCompletableObserver() {
@@ -65,8 +61,8 @@ class LocalDBRepository(var application: Application) {
         )
     }
 
-    fun deleteAllCar() {
-        var completable: Completable = carsDatabase.carsDAO().delete()
+    override fun deleteAllCars() {
+        var completable: Completable = vehicleDatabase.carsDAO().delete()
         compositeDisposable.add(
             completable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableCompletableObserver() {
@@ -83,9 +79,9 @@ class LocalDBRepository(var application: Application) {
         )
     }
 
-    fun getAllCars() {
+    override fun getAllCars() {
         onProgressChangedLiveData.value = true
-        var single: Maybe<List<Vehicle>> = carsDatabase.carsDAO().getAllCars()
+        var single: Maybe<List<Vehicle>> = vehicleDatabase.carsDAO().getAllCars()
         compositeDisposable.add(
             single.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableMaybeObserver<List<Vehicle>>() {
@@ -107,8 +103,8 @@ class LocalDBRepository(var application: Application) {
         )
     }
 
-    fun getUnsyncedCars() {
-        var maybe: Maybe<List<Vehicle>> = carsDatabase.carsDAO().getUnsyncedCars(false)
+    override fun getUnsyncedCars() {
+        var maybe: Maybe<List<Vehicle>> = vehicleDatabase.carsDAO().getUnsyncedCars(false)
         compositeDisposable.add(
             maybe.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableMaybeObserver<List<Vehicle>>() {
@@ -128,25 +124,25 @@ class LocalDBRepository(var application: Application) {
         )
     }
 
-    fun getLocalDBCarsResponseMutableLiveData(): LiveData<List<Vehicle>> {
+    override fun getLocalDBCarsResponseMutableLiveData(): LiveData<List<Vehicle>> {
         return vehicleListResponseMutableLiveData
     }
 
-    fun getUnsyncedCarsResponseMutableLiveData(): LiveData<List<Vehicle>> {
+    override fun getUnsyncedCarsResponseMutableLiveData(): LiveData<List<Vehicle>> {
         return unsyncedCarsResponseMutableLiveData
     }
 
 
-    fun getOnProgressChangedLiveData(): LiveData<Boolean> {
+    override fun getOnProgressChangedLiveData(): LiveData<Boolean> {
         return onProgressChangedLiveData
     }
 
-    fun getInsertCartLocalDBResponseMutableLiveData(): LiveData<Boolean> {
+    override fun getInsertCartLocalDBResponseMutableLiveData(): LiveData<Boolean> {
         return insertCartResponseMutableLiveData
     }
 
 
-    fun clearDisposable() {
+    override fun clearDisposable() {
         compositeDisposable.clear()
     }
 }

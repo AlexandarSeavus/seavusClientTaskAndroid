@@ -5,26 +5,39 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.seavus.arabamisat.model.Vehicle
-import com.seavus.arabamisat.repository.FirebaseRepository
-import com.seavus.arabamisat.repository.LocalDBRepository
+import com.seavus.arabamisat.repository.FirebaseRepoImpl
+import com.seavus.arabamisat.repository.IDBRepo
+import com.seavus.arabamisat.repository.IFirebaseRepo
+import com.seavus.arabamisat.repository.LocalDBRepoImpl
+import kotlinx.coroutines.launch
 
-class CarsViewModel(application: Application) : AndroidViewModel(application) {
-    private var firbaseRepository: FirebaseRepository
-    private var localDBRepository: LocalDBRepository
+class VehicleViewModel(application: Application) : AndroidViewModel(application) {
 
-    init {
-        firbaseRepository = FirebaseRepository(application)
-        localDBRepository = LocalDBRepository(application)
+    private var firebaseRepo: IFirebaseRepo = FirebaseRepoImpl(application)
+
+    private var localDBRepository: IDBRepo = LocalDBRepoImpl(application)
+
+
+    val uploadResponse: LiveData<Uri>
+        get() = _uploadResponse
+
+    private val _uploadResponse by lazy {
+        MutableLiveData<Uri>()
     }
+
     // FIREBASE ==================================================================================
 
     fun uploadToFirebase(uri: Uri, context: Context) {
-        firbaseRepository.uploadToFirebase(uri, context)
+        viewModelScope.launch {
+            _uploadResponse.value = firebaseRepo.uploadToFirebase(uri, context)
+        }
     }
 
     fun getCars() {
-        firbaseRepository.getCars()
+        firebaseRepo.getCars()
     }
 
     // LOCAL DB ==================================================================================
@@ -34,11 +47,11 @@ class CarsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addCarListToLocalDB(vehicleList: List<Vehicle>) {
-        localDBRepository.addAllCar(vehicleList)
+        localDBRepository.addAllCars(vehicleList)
     }
 
     fun deleteCarListToLocalDB() {
-        localDBRepository.deleteAllCar()
+        localDBRepository.deleteAllCars()
     }
 
     fun getCarFromLocalDB() {
@@ -64,17 +77,12 @@ class CarsViewModel(application: Application) : AndroidViewModel(application) {
         return localDBRepository.getInsertCartLocalDBResponseMutableLiveData()
     }
 
-
-    fun getUploadResponseMutableLiveData(): LiveData<Uri> {
-        return firbaseRepository.getUploadResponseMutableLiveData()
-    }
-
     fun getCarsResponseMutableLiveData(): LiveData<ArrayList<Vehicle>> {
-        return firbaseRepository.getCarsResponseMutableLiveData()
+        return firebaseRepo.getCarsResponseMutableLiveData()
     }
 
     fun getOnProgressChangedLiveData(): LiveData<Boolean> {
-        return firbaseRepository.getOnProgressChangedLiveData()
+        return firebaseRepo.getOnProgressChangedLiveData()
     }
 
     fun clearObservers() {

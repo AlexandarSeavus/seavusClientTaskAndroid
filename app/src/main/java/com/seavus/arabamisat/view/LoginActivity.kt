@@ -8,12 +8,12 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-
 import com.facebook.CallbackManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.seavus.arabamisat.R
 import com.seavus.arabamisat.databinding.ActivityLoginBinding
@@ -67,7 +67,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun setUpLoginObserver() {
         loginViewModel.getAuthResponseMutableLiveData()
-            ?.observe(this,
+            .observe(this,
                 Observer<FirebaseUser> { firebaseUser -> firebaseUser?.let { showUI(it) } })
 
     }
@@ -85,7 +85,7 @@ class LoginActivity : AppCompatActivity() {
         binding.loginButton.visibility = View.GONE
         binding.googleSignInButton.visibility = View.GONE
         if (firebaseUser.photoUrl != null) {
-            Picasso.get().load(firebaseUser.photoUrl).into(binding.imagePlaceholder);
+            Picasso.get().load(firebaseUser.photoUrl).into(binding.imagePlaceholder)
         }
         Handler(Looper.getMainLooper()).postDelayed({
             FirebaseCrashlytics.getInstance().setUserId(firebaseUser.uid)

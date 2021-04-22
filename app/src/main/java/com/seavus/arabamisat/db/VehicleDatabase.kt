@@ -7,24 +7,24 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.seavus.arabamisat.model.Vehicle
 
-@Database(entities = [Vehicle::class], version = 1,  exportSchema = false)
-abstract class CarsDatabase : RoomDatabase() {
+@Database(entities = [Vehicle::class], version = 1, exportSchema = false)
+abstract class VehicleDatabase : RoomDatabase() {
     abstract fun carsDAO(): VehicleDAO
 
     companion object {
         @Volatile
-        private lateinit var INSTANCE: CarsDatabase
-        fun getInstance(application: Application): CarsDatabase {
-            synchronized(CarsDatabase::class.java) {
+        private lateinit var INSTANCE: VehicleDatabase
+        fun getInstance(application: Application): VehicleDatabase {
+            synchronized(VehicleDatabase::class.java) {
                 if (!::INSTANCE.isInitialized) {
                     INSTANCE = Room.databaseBuilder(
                         application,
-                        CarsDatabase::class.java,
+                        VehicleDatabase::class.java,
                         "cars_database"
                     ).addCallback(rDC).fallbackToDestructiveMigration()
                         .build()
                 }
-                return INSTANCE;
+                return INSTANCE
             }
         }
 
